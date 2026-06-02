@@ -1,21 +1,8 @@
 # mcp-abap-adt: 您的 SAP ABAP 开发工具 (ADT) 门户
 
-本项目源自 [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt) 的修改与增强，专门针对 **Gemini**、**钉钉** 等集成应用进行了优化。
+本项目源自 [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt) 的修改与增强，专为 **Gemini**、**钉钉悟空** 等 AI 与办公集成应用进行了深度优化。
 
-本项目提供了一个服务器，允许您使用 Model Context Protocol (MCP) 与 SAP ABAP 系统进行交互。它就像是一个桥梁，让 Gemini 或 钉钉悟空 等工具能够直接与您的 ABAP 系统“对话”，获取源代码、表结构等信息。
-
-<a href="https://glama.ai/mcp/servers/gwkh12xlu7">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/gwkh12xlu7/badge" alt="ABAP ADT MCP server" />
-</a>
-
-本指南旨在帮助您快速入门，我们将分步骤介绍：
-
-1.  **前提条件**：开始前的准备工作。
-2.  **安装与设置**：环境配置。
-3.  **运行服务器**：如何启动服务。
-4.  **工具集成**：连接到 Cline 或其他 MCP 客户端。
-5.  **故障排除**：常见问题及解决方案。
-6.  **可用工具**：可调用的命令列表。
+本项目提供了一个基于 Model Context Protocol (MCP) 的服务器，充当 AI 工具与 SAP ABAP 系统之间的桥梁。通过它，Gemini 或钉钉悟空能够直接读取您的 ABAP 系统，获取源代码、表结构、包详情等信息。
 
 ## 1. 前提条件
 
@@ -26,7 +13,7 @@
     *   有效的用户名和密码。
     *   SAP 客户端编号（Client，例如：`100`）。
     *   确保系统已激活 ADT 服务（通常是 `/sap/bc/adt`）。
-    *   对于 `GetTableContents` 工具，需要部署自定义服务 `/z_mcp_abap_adt/z_tablecontent`。
+    *   可选项，对于 `GetTableContents` 工具，需要部署自定义服务 `/z_mcp_abap_adt/z_tablecontent`。
 
 *   **Node.js 和 npm**：
     *   建议安装最新的 **LTS** 版本。
@@ -39,19 +26,9 @@ git clone https://github.com/TikeeShall/abap_mcp_gemini.git
 cd abap_mcp_gemini
 ```
 
-### 2.2 安装依赖
-```bash
-npm install
-```
-
-### 2.3 构建项目
-```bash
-npm run build
-```
-
-### 2.4 配置 `.env` 文件
+### 2.2 配置 `.env` 文件
 这是存储敏感信息的关键步骤：
-1.  在根目录下创建名为 `.env` 的文件。
+1.  在克隆后的根目录下创建名为 `.env` 的文件，可参照.env.example。
 2.  添加以下内容（将占位符替换为您的实际信息）：
     **注意：如果您的密码包含 "#" 字符，请务必用引号括起来！**
     ```
@@ -62,42 +39,18 @@ npm run build
     ```
     **重要提示：切勿共享您的 `.env` 文件，也不要将其提交到 Git 仓库！**
 
-## 3. 运行服务器
+## 3. Gemini中需要需要提示它安排即可
 
-### 3.1 标准模式
-```bash
-npm run start
-```
+## 4. 钉钉悟空
+确保 .env 环境变量已正确配置。打开钉钉悟空，依次点击：设置 -> MCP 服务 -> 添加 MCP。
+按照以下说明填写表单：
+配置项x填写内容
+类型,STDIO
+名称,abap-adt-mcp
+命令,node
+额外参数,本地编译后的文件绝对路径，例如：C:\SAP_Dependency\mcp-abap-adt-gemini\dist\index.js
 
-### 3.2 调试模式（带 Inspector）
-```bash
-npm run dev
-```
-启动后会输出一个 URL（通常是 `http://localhost:5173`），您可以在浏览器中打开它进行交互式调试。
-
-## 4. 工具集成
-
-### Cline (VS Code 扩展)
-1. 在 VS Code 中打开 `cline_mcp_settings.json`。
-2. 添加以下配置：
-```json
-{
-  "mcpServers": {
-    "mcp-abap-adt": {
-      "command": "node",
-      "args": ["C:/你的路径/abap_mcp_gemini/dist/index.js"],
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}
-```
-
-## 5. 故障排除
-*   **连接错误**：检查 `.env` 中的凭据是否正确，以及 SAP 系统是否允许外部 ADT 连接。
-*   **CSRF 令牌失败**：本项目已针对 CSRF 校验进行了优化，如果仍报错，请检查用户权限。
-
-## 6. 可用工具 (Available Tools)
+## 5. 可用工具 (Available Tools)
 
 本服务器提供以下工具，可通过 Gemini 或其他 MCP 客户端调用：
 
@@ -118,4 +71,4 @@ npm run dev
 
 ## 致谢 (Credits)
 
-本项目基于并引用了 [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt) 的工作，并针对现代 AI 助手集成的需求进行了适配。
+本项目基于并修改自 mario-andreschak/mcp-abap-adt。感谢原作者的开源贡献，本项目在此基础上针对现代 AI 助手集成的实际落地场景做了进一步适配。
