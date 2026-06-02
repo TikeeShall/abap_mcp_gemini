@@ -125,6 +125,17 @@ async function fetchCsrfToken(url: string): Promise<string> {
 }
 
 export async function makeAdtRequest(url: string, method: string, timeout: number, data?: any, params?: any) {
+    if (!config) {
+        config = getConfig();
+    }
+    const { client } = config;
+
+    // Ensure sap-client is in params
+    const requestParams = {
+        'sap-client': client,
+        ...params
+    };
+
     // For POST/PUT requests, ensure we have a CSRF token
     if ((method === 'POST' || method === 'PUT') && !csrfToken) {
         try {
@@ -148,29 +159,29 @@ export async function makeAdtRequest(url: string, method: string, timeout: numbe
         requestHeaders['Cookie'] = cookies;
     }
 
-    const config: any = {
+    const axiosConfig: any = {
         method,
         url,
         headers: requestHeaders,
         timeout,
-        params: params
+        params: requestParams
     };
 
     // Include data in the request configuration if provided
     if (data) {
-        config.data = data;
+        axiosConfig.data = data;
     }
 
     try {
-        const response = await createAxiosInstance()(config);
+        const response = await createAxiosInstance()(axiosConfig);
         return response;
     } catch (error) {
         // If we get a 403 with "CSRF token validation failed", try to fetch a new token and retry
         if (error instanceof AxiosError && error.response?.status === 403 &&
             error.response.data?.includes('CSRF')) {
             csrfToken = await fetchCsrfToken(url);
-            config.headers['x-csrf-token'] = csrfToken;
-            return await createAxiosInstance()(config);
+            axiosConfig.headers['x-csrf-token'] = csrfToken;
+            return await createAxiosInstance()(axiosConfig);
         }
         throw error;
     }
