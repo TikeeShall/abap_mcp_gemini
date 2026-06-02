@@ -1,215 +1,121 @@
-# mcp-abap-adt: Your Gateway to ABAP Development Tools (ADT)
+# mcp-abap-adt: 您的 SAP ABAP 开发工具 (ADT) 门户
 
-[![smithery badge](https://smithery.ai/badge/@mario-andreschak/mcp-abap-adt)](https://smithery.ai/server/@mario-andreschak/mcp-abap-adt)
+本项目源自 [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt) 的修改与增强，专门针对 **Gemini**、**钉钉** 等集成应用进行了优化。
 
-This project provides a server that allows you to interact with SAP ABAP systems using the Model Context Protocol (MCP).  Think of it as a bridge that lets tools like [Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev) (a VS Code extension) talk to your ABAP system and retrieve information like source code, table structures, and more.  It's like having a remote control for your ABAP development environment!
+本项目提供了一个服务器，允许您使用 Model Context Protocol (MCP) 与 SAP ABAP 系统进行交互。它就像是一个桥梁，让 Gemini 或 Cline 等工具能够直接与您的 ABAP 系统“对话”，获取源代码、表结构等信息。
 
 <a href="https://glama.ai/mcp/servers/gwkh12xlu7">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/gwkh12xlu7/badge" alt="ABAP ADT MCP server" />
 </a>
 
-This guide is designed for beginners, so we'll walk through everything step-by-step.  We'll cover:
+本指南旨在帮助您快速入门，我们将分步骤介绍：
 
-1.  **Prerequisites:** What you need before you start.
-2.  **Installation and Setup:**  Getting everything up and running.
-3.  **Running the Server:**  Starting the server in different modes.
-4.  **Integrating with Cline:** Connecting this server to the Cline VS Code extension.
-5.  **Troubleshooting:**  Common problems and solutions.
-6.  **Available Tools:**  A list of the commands you can use.
+1.  **前提条件**：开始前的准备工作。
+2.  **安装与设置**：环境配置。
+3.  **运行服务器**：如何启动服务。
+4.  **工具集成**：连接到 Cline 或其他 MCP 客户端。
+5.  **故障排除**：常见问题及解决方案。
+6.  **可用工具**：可调用的命令列表。
 
-## 1. Prerequisites
+## 1. 前提条件
 
-Before you begin, you'll need a few things:
+在开始之前，您需要准备：
 
-*   **An SAP ABAP System:**  This server connects to an existing ABAP system.  You'll need:
-    *   The system's URL (e.g., `https://my-sap-system.com:8000`)
-    *   A valid username and password for that system.
-    *   The SAP client number (e.g., `100`).
-    *   Ensure that your SAP system allows connections via ADT (ABAP Development Tools). This usually involves making sure the necessary services are activated in transaction `SICF`.  Your basis administrator can help with this. Specifically, you will need the following services to be active:
-        * `/sap/bc/adt`
-    *   For the `GetTableContents` Tool, you will need the implementation of a custom service `/z_mcp_abap_adt/z_tablecontent`. You can follow this guide [here](https://community.sap.com/t5/application-development-blog-posts/how-to-use-rfc-read-table-from-javascript-via-webservice/ba-p/13172358)
+*   **SAP ABAP 系统**：
+    *   系统的 URL（例如：`https://my-sap-system.com:8000`）。
+    *   有效的用户名和密码。
+    *   SAP 客户端编号（Client，例如：`100`）。
+    *   确保系统已激活 ADT 服务（通常是 `/sap/bc/adt`）。
+    *   对于 `GetTableContents` 工具，需要部署自定义服务 `/z_mcp_abap_adt/z_tablecontent`。
 
-*   **Git (or GitHub Desktop):**  We'll use Git to download the project code.  You have two options:
-    *   **Git:**  The command-line tool.  [Download Git](https://git-scm.com/downloads).  Choose the version for your operating system (Windows, macOS, Linux). Follow the installation instructions.
-    *   **GitHub Desktop:**  A graphical user interface for Git.  Easier for beginners!  [Download GitHub Desktop](https://desktop.github.com/).  Follow the installation instructions.
+*   **Node.js 和 npm**：
+    *   建议安装最新的 **LTS** 版本。
 
-*   **Node.js and npm:** Node.js is a JavaScript runtime that lets you run JavaScript code outside of a web browser.  npm (Node Package Manager) is included with Node.js and is used to install packages (libraries of code).
-    *   [Download Node.js](https://nodejs.org/en/download/).  **Choose the LTS (Long Term Support) version.**  This is the most stable version. Follow the installation instructions for your operating system.  Make sure to include npm in the installation (it's usually included by default).
-    *   **Verify Installation:** After installing Node.js, open a new terminal (command prompt on Windows, Terminal on macOS/Linux) and type:
-        ```bash
-        node -v
-        npm -v
-        ```
-        You should see version numbers for both Node.js and npm.  If you see an error, Node.js might not be installed correctly, or it might not be in your system's PATH.  (See Troubleshooting below).
+## 2. 安装与设置
 
-## 2. Installation and Setup
-
-Now, let's get the project code and set it up:
-
-### Installing via Smithery
-
-To install MCP ABAP Development Tools Server for Cline automatically via [Smithery](https://smithery.ai/server/@mario-andreschak/mcp-abap-adt):
-
+### 2.1 克隆仓库
 ```bash
-npx -y @smithery/cli install @mario-andreschak/mcp-abap-adt --client cline
+git clone https://github.com/TikeeShall/abap_mcp_gemini.git
+cd abap_mcp_gemini
 ```
 
-### Manual Installation
-1.  **Clone the Repository:**
-    *   **Using Git (command line):**
-        1.  Open a terminal (command prompt or Terminal).
-        2.  Navigate to the directory where you want to store the project.  For example, to put it on your Desktop:
-            ```bash
-            cd Desktop
-            ```
-        3.  Clone the repository:
-            ```bash
-            git clone https://github.com/mario-andreschak/mcp-abap-adt
-            ```
-        4.  Change into the project directory:
-            ```bash
-            cd mcp-abap-adt  # Or whatever the folder name is
-            ```
-    *   **Using GitHub Desktop:**
-        1.  Open GitHub Desktop.
-        2.  Click "File" -> "Clone Repository...".
-        3.  In the "URL" tab, paste the repository URL.
-        4.  Choose a local path (where you want to save the project on your computer).
-        5.  Click "Clone".
+### 2.2 安装依赖
+```bash
+npm install
+```
 
-2.  **Install Dependencies:**  This downloads all the necessary libraries the project needs.  In the terminal, inside the root directory, run:
-    ```bash
-    npm install
+### 2.3 构建项目
+```bash
+npm run build
+```
+
+### 2.4 配置 `.env` 文件
+这是存储敏感信息的关键步骤：
+1.  在根目录下创建名为 `.env` 的文件。
+2.  添加以下内容（将占位符替换为您的实际信息）：
+    **注意：如果您的密码包含 "#" 字符，请务必用引号括起来！**
     ```
-    This might take a few minutes.
-
-3.  **Build the Project:** This compiles the code into an executable format.
-    ```bash
-    npm run build
+    SAP_URL=https://your-sap-system.com:8000
+    SAP_USERNAME=your_username
+    SAP_PASSWORD=your_password
+    SAP_CLIENT=100
     ```
+    **重要提示：切勿共享您的 `.env` 文件，也不要将其提交到 Git 仓库！**
 
-4.  **Create a `.env` file:** This file stores sensitive information like your SAP credentials.  It's *very* important to keep this file secure.
-    1.  In the root directory, create a new file named `.env` (no extension).
-    2.  Open the `.env` file in a text editor (like Notepad, VS Code, etc.).
-    3.  Add the following lines, replacing the placeholders with your actual SAP system information:
-        Important: If your password contains a "#" character, make sure to enclose your password in quotes!
-        ```
-        SAP_URL=https://your-sap-system.com:8000  # Your SAP system URL
-        SAP_USERNAME=your_username              # Your SAP username
-        SAP_PASSWORD=your_password              # Your SAP password
-        SAP_CLIENT=100                         # Your SAP client
-        ```
-        **Important:**  Never share your `.env` file with anyone, and never commit it to a Git repository!
+## 3. 运行服务器
 
-## 3. Running the Server
-
-To be fair, you usually dont usually "run" this server on it's own. It is supposed to be integrated into an MCP Client like Cline or Claude Desktop. But you *can* manually run the server in two main ways:
-
-*   **Standalone Mode:**  This runs the server directly, and it will output messages to the terminal. The server will start and wait for client connections, so potentially rendering it useless except to see if it starts.
-*   **Development/Debug Mode:** This runs the server with the MCP Inspector. You can open the URL that it outputs in your browser and start playing around.
-
-### 3.1 Standalone Mode
-
-To run the server in standalone mode, use the following command in the terminal (from the root directory):
-
+### 3.1 标准模式
 ```bash
 npm run start
 ```
 
-You should see messages in the terminal indicating that the server is running.  It will listen for connections from MCP clients.  The server will keep running until you stop it (usually with Ctrl+C).
+### 3.2 调试模式（带 Inspector）
+```bash
+npm run dev
+```
+启动后会输出一个 URL（通常是 `http://localhost:5173`），您可以在浏览器中打开它进行交互式调试。
 
-### 3.2 Development/Debug Mode (with Inspector)
+## 4. 工具集成
 
-This mode is useful for debugging.
-
-1.  **Start the server in debug mode:**
-    ```bash
-    npm run dev
-    ```
-    This will start the server and output a message like:  `🔍 MCP Inspector is up and running at http://localhost:5173 🚀`.
-    This is the URL you'll use to open the MCP inspector in your Browser.
-
-## 4. Integrating with Cline
-
-Cline is a VS Code extension that uses MCP servers to provide language support. Here's how to connect this ABAP server to Cline:
-
-1.  **Install Cline:** If you haven't already, install the "Cline" extension in VS Code.
-
-2.  **Open Cline Settings:**
-    *   Open the VS Code settings (File -> Preferences -> Settings, or Ctrl+,).
-    *   Search for "Cline MCP Settings".
-    *   Click "Edit in settings.json". This will open the `cline_mcp_settings.json` file.  The full path is usually something like: `C:\Users\username\AppData\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json` (replace `username` with your Windows username).
-
-3.  **Add the Server Configuration:**  You'll need to add an entry to the `servers` array in the `cline_mcp_settings.json` file.  Here's an example:
-
-    ```json
-    {
-      "mcpServers": 
-        {
-          "mcp-abap-adt": {
-            "command": "node",
-            "args": [
-              "C:/PATH_TO/mcp-abap-adt/dist/index.js"
-            ],
-            "disabled": true,
-            "autoApprove": []
-          }
-        // ... other server configurations ...
-        }
+### Cline (VS Code 扩展)
+1. 在 VS Code 中打开 `cline_mcp_settings.json`。
+2. 添加以下配置：
+```json
+{
+  "mcpServers": {
+    "mcp-abap-adt": {
+      "command": "node",
+      "args": ["C:/你的路径/abap_mcp_gemini/dist/index.js"],
+      "disabled": false,
+      "autoApprove": []
     }
-    ```
+  }
+}
+```
 
-4.  **Test the Connection:**
-    *   Cline should automatically connect to the server.  You will see the Server appear in the "MCP Servers" Panel (in the Cline extension, you'll find different buttons on the top.)
-    *   Ask Cline to get the Sourcecode of a program and it should mention the MCP Server and should try to use the corresponding tools
+## 5. 故障排除
+*   **连接错误**：检查 `.env` 中的凭据是否正确，以及 SAP 系统是否允许外部 ADT 连接。
+*   **CSRF 令牌失败**：本项目已针对 CSRF 校验进行了优化，如果仍报错，请检查用户权限。
 
-## 5. Troubleshooting
+## 6. 可用工具 (Available Tools)
 
-*   **`node -v` or `npm -v` gives an error:**
-    *   Make sure Node.js is installed correctly.  Try reinstalling it.
-    *   Ensure that the Node.js installation directory is in your system's PATH environment variable.  On Windows, you can edit environment variables through the System Properties (search for "environment variables" in the Start Menu).
-*   **`npm install` fails:**
-    *   Make sure you have an internet connection.
-    *   Try deleting the `node_modules` folder and running `npm install` again.
-    *   If you're behind a proxy, you might need to configure npm to use the proxy.  Search online for "npm proxy settings".
-*   **Cline doesn't connect to the server:**
-    *   Double-check the settings in `cline_mcp_settings.json`.  It *must* be the correct, absolute path to the `root-server` directory, and use double backslashes on Windows.
-    *   Make sure the server is running (use `npm run start` to check).
-    *   Restart VS Code.
-    *   Alternatively: 
-    *   Navigate to the root folder of mcp-abap-adt in your Explorer, Shift+Right-Click and select "Open Powershell here". (Or open a Powershell and navigate to the folder using `cd C:/PATH_TO/mcp-abap-adt/`
-    *   Run "npm install"
-    *   Run "npm run build"
-    *   Run "npx @modelcontextprotocol/inspector node dist/index.js"
-    *   Open your browser at the URL it outputs. Click "connect" on the left side.
-    *   Click "Tools" on the top, then click "List Tools"
-    *   Click GetProgram and enter "SAPMV45A" or any other Report name as Program Name on the right
-    *   Test and see what the output is
-*   **SAP connection errors:**
-    *   Verify your SAP credentials in the `.env` file.
-    *   Ensure that the SAP system is running and accessible from your network.
-    *   Make sure that your SAP user has the necessary authorizations to access the ADT services.
-    *   Check that the required ADT services are activated in transaction `SICF`.
-    *   If you're using self-signed certificates or there is an issue with your SAP systems http config, make sure to set TLS_REJECT_UNAUTHORIZED as described above!
+本服务器提供以下工具，可通过 Gemini 或其他 MCP 客户端调用：
 
-## 6. Available Tools
+| 工具名称 | 描述 | 输入参数 | 示例用法 |
+| :--- | :--- | :--- | :--- |
+| `GetProgram` | 获取 ABAP 程序源代码。 | `program_name` (string) | `@tool GetProgram program_name=ZMY_PROGRAM` |
+| `GetClass` | 获取 ABAP 类源代码。 | `class_name` (string) | `@tool GetClass class_name=ZCL_MY_CLASS` |
+| `GetFunctionGroup` | 获取 ABAP 函数组源代码。 | `function_group` (string) | `@tool GetFunctionGroup function_group=ZMY_FG` |
+| `GetFunction` | 获取 ABAP 函数模块源代码。 | `function_name` (string), `function_group` (string) | `@tool GetFunction function_name=ZMY_FM` |
+| `GetStructure` | 获取 ABAP 结构信息。 | `structure_name` (string) | `@tool GetStructure structure_name=ZMY_STRUCT` |
+| `GetTable` | 获取 ABAP 数据库表结构。 | `table_name` (string) | `@tool GetTable table_name=ZMY_TABLE` |
+| `GetTableContents` | 获取 ABAP 表内容数据。 | `table_name` (string), `max_rows` (number) | `@tool GetTableContents table_name=ZMY_TABLE` |
+| `GetPackage` | 获取 ABAP 开发包详情。 | `package_name` (string) | `@tool GetPackage package_name=ZMY_PACKAGE` |
+| `GetTypeInfo` | 获取 ABAP 类型信息。 | `type_name` (string) | `@tool GetTypeInfo type_name=ZMY_TYPE` |
+| `GetInclude` | 获取 ABAP 包含程序源代码。 | `include_name` (string) | `@tool GetInclude include_name=ZMY_INCLUDE` |
+| `SearchObject` | 全局搜索 ABAP 对象。 | `query` (string) | `@tool SearchObject query=ZMY*` |
+| `GetInterface` | 获取 ABAP 接口源代码。 | `interface_name` (string) | `@tool GetInterface interface_name=ZIF_MY_INT` |
 
-This server provides the following tools, which can be used through Cline (or any other MCP client):
+## 致谢 (Credits)
 
-| Tool Name           | Description                                       | Input Parameters                                                   | Example Usage (in Cline)                                   |
-| ------------------- | ------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `GetProgram`        | Retrieve ABAP program source code.                | `program_name` (string): Name of the ABAP program.                 | `@tool GetProgram program_name=ZMY_PROGRAM`                |
-| `GetClass`          | Retrieve ABAP class source code.                  | `class_name` (string): Name of the ABAP class.                     | `@tool GetClass class_name=ZCL_MY_CLASS`                   |
-| `GetFunctionGroup`  | Retrieve ABAP Function Group source code.         | `function_group` (string): Name of the function group              | `@tool GetFunctionGroup function_group=ZMY_FUNCTION_GROUP` |
-| `GetFunction`       | Retrieve ABAP Function Module source code.        | `function_name` (string), `function_group` (string)                | `@tool GetFunction function_name=ZMY_FUNCTION function_group=ZFG`|
-| `GetStructure`      | Retrieve ABAP Structure.                          | `structure_name` (string): Name of the DDIC Structure.             | `@tool GetStructure structure_name=ZMY_STRUCT`             |
-| `GetTable`          | Retrieve ABAP table structure.                    | `table_name` (string): Name of the ABAP DB table.                  | `@tool GetTable table_name=ZMY_TABLE`                      |
-| `GetTableContents`  | Retrieve contents of an ABAP table.               | `table_name` (string), `max_rows` (number, optional, default 100)  | `@tool GetTableContents table_name=ZMY_TABLE max_rows=50`  |
-| `GetPackage`        | Retrieve ABAP package details.                    | `package_name` (string): Name of the ABAP package.                 | `@tool GetPackage package_name=ZMY_PACKAGE`                |
-| `GetTypeInfo`       | Retrieve ABAP type information.                   | `type_name` (string): Name of the ABAP type.                       | `@tool GetTypeInfo type_name=ZMY_TYPE`                     |
-| `GetInclude`        | Retrieve ABAP include source code                 | `include_name` (string): name of the ABAP include`                 | `@tool GetInclude include_name=ZMY_INCLUDE`                |
-| `SearchObject`      | Search for ABAP objects using quick search.       | `query` (string), `maxResults` (number, optional, default 100)     | `@tool SearchObject query=ZMY* maxResults=20`              |
-| `GetInterface`      | Retrieve ABAP interface source code.              | `interface_name` (string): Name of the ABAP interface.             | `@tool GetInterface interface_name=ZIF_MY_INTERFACE`       |
-## Credits
-
-This project is based on and references the work from [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt).
+本项目基于并引用了 [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt) 的工作，并针对现代 AI 助手集成的需求进行了适配。
