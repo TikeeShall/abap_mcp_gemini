@@ -2,7 +2,7 @@
 
 本项目源自 [mario-andreschak/mcp-abap-adt](https://github.com/mario-andreschak/mcp-abap-adt) 的修改与增强，专门针对 **Gemini**、**钉钉** 等集成应用进行了优化。
 
-本项目提供了一个服务器，允许您使用 Model Context Protocol (MCP) 与 SAP ABAP 系统进行交互。它就像是一个桥梁，让 Gemini 或 Cline 等工具能够直接与您的 ABAP 系统“对话”，获取源代码、表结构等信息。
+本项目提供了一个服务器，允许您使用 Model Context Protocol (MCP) 与 SAP ABAP 系统进行交互。它就像是一个桥梁，让 Gemini 或 钉钉悟空 等工具能够直接与您的 ABAP 系统“对话”，获取源代码、表结构等信息。
 
 <a href="https://glama.ai/mcp/servers/gwkh12xlu7">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/gwkh12xlu7/badge" alt="ABAP ADT MCP server" />
